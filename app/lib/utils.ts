@@ -5,6 +5,7 @@ const swap = (matrix: number[][], g: number, h: number, i: number, j: number) =>
 }
 
 export const rotateImageAntihorario = (matrix: number[][]) => {
+    console.log(matrix)
     if (matrix.length > 1) {
         let topRow = 0, bottomRow = matrix.length - 1, leftCol = topRow, rightCol = bottomRow;
 

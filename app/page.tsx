@@ -6,20 +6,27 @@ import InsertMatrix  from "./ui/buttons";
 import DisplayMatrix from './ui/display-matrix';
 import { rotateImageAntihorario } from './lib/utils';
 
+const defaultValue = JSON.stringify([
+  [1, 2, 3],
+  [4, 5, 6],
+  [7, 8, 9]
+]);
+
 const Home = ()  => {
 
-  const [inputValue, setInputValue] = React.useState<any>('');
-  const [parsedMatrix, setParsedMatrix] = React.useState<number[][]>([]);
-  const [isValid, setIsValid] = React.useState<boolean>(false);
+  const [inputValue, setInputValue] = React.useState<string>(defaultValue);
+  const [parsedMatrix, setParsedMatrix] = React.useState<number[][]>(JSON.parse(inputValue));
+  const [isValid, setIsValid] = React.useState<boolean>(true);
   const [message, setMessage] = React.useState<string>('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
     const value = e.target.value;
-    
+
     if (value.length === 0) {
       setMessage("Input vacío");
       setIsValid(false);
+      return;
     }
 
     try {
@@ -29,30 +36,42 @@ const Home = ()  => {
       if (!Array.isArray(jsonParse)) {
         setIsValid(false);
         setMessage("Lo que ingresaste no es una matriz");
-      } else if (jsonParse.length === 0) {
+        return;
+      }
+
+      if (jsonParse.length === 0) {
         setIsValid(false);
         setMessage("Tu matriz está vacía");
-      } else {
-        const areAllRowsNonEmpty = jsonParse.every((fila: any) => fila.length > 0);
-        const isLengthEqual = jsonParse.every((fila: any) => fila.length === jsonParse.length);
-        const areAllNumbers = jsonParse.every((fila: any) => fila.every((cell: any) => typeof cell === 'number'));
-
-        if (!areAllRowsNonEmpty) {
-          setMessage("Tu matriz contiene arrays vacíos");
-          setIsValid(false);
-        } else if (!isLengthEqual) {
-          setMessage("Tu matriz debe ser una matriz de NxN");
-          setIsValid(false);
-        } else if (!areAllNumbers) {
-          setMessage("Todos los valores de la matriz deben ser números");
-          setIsValid(false);
-        } else {
-          setIsValid(true);
-          setParsedMatrix(jsonParse);
-          setInputValue(jsonParse);
-          setMessage('');
-        }        
+        return;
       }
+
+      const areAllRowsNonEmpty = jsonParse.every((fila: any) => fila.length > 0);
+      const isLengthEqual = jsonParse.every((fila: any) => fila.length === jsonParse.length);
+      const areAllNumbers = jsonParse.every((fila: any) => fila.every((cell: any) => typeof cell === 'number'));
+
+      if (!areAllRowsNonEmpty) {
+        setIsValid(false);
+        setMessage("Tu matriz contiene arrays vacíos");
+        return;
+      }
+
+      if (!isLengthEqual) {
+        setIsValid(false);
+        setMessage("Tu matriz debe ser una matriz de NxN");
+        return;
+      }
+
+      if (!areAllNumbers) {
+        setIsValid(false);
+        setMessage("Todos los valores de la matriz deben ser números");
+        return;
+      }
+
+      setIsValid(true);
+      setParsedMatrix(jsonParse);
+      setInputValue(JSON.stringify(jsonParse));
+      setMessage('');
+
     } catch {
       setIsValid(false);
       setMessage("Input inválido");
@@ -74,14 +93,15 @@ const Home = ()  => {
         <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
           <InputMatrix 
             placeholder="Inserta matriz..." 
-            onInputChange={handleInputChange}         
+            onInputChange={handleInputChange}
+            defaultInput={inputValue}      
           />
           <InsertMatrix onButtonClick={handleButtonClick} disabled={!isValid}/>
         </div>
         <div className="mt-5 flex w-full justify-center">
             { 
-                parsedMatrix.length > 0 || inputValue.length > 0 ? (
-                <DisplayMatrix matrix={ parsedMatrix ? parsedMatrix : inputValue } />
+                isValid ? (
+                  <DisplayMatrix matrix={parsedMatrix.length > 0 ? parsedMatrix : JSON.parse(inputValue)} />
                 ) : (
                   <p>{message}</p>
                 )
